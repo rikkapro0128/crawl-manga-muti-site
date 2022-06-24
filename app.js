@@ -3,7 +3,19 @@ const cheerio = require('cheerio');
 const htmlparser2 = require('htmlparser2');
 
 
-const linkManga = 'https://blogtruyen.vn/30479/ano-toki-tasuketa-karasu-ga-doji-sugite-komaru';
+const linkManga = 'https://blogtruyen.vn/28770/initial-d';
+
+function checkProtocol({ URLWebManga = '' }) {
+  if(URLWebManga !== '') {
+    return (new RegExp('^https?', 'g')).test(URLWebManga);
+  }else {
+    return new Error('URLWebManga not pass to funtion!');
+  }
+}
+
+function completeDNS({ protocol = 'http', subdomain = '', domain = '', TLD = 'vn', urlPoint }) {
+  return `${protocol}://${subdomain ? (subdomain + '.') : ''}${domain}.${TLD}${urlPoint}`;
+}
 
 (async () => {
   const res = await axios.get(linkManga);
@@ -54,6 +66,20 @@ const linkManga = 'https://blogtruyen.vn/30479/ano-toki-tasuketa-karasu-ga-doji-
     })
     console.log(info.toArray());
     console.log('Update on blogtruyen: ', $('.main-content .description .row > .col-sm-6 > span').text());
+    const dataChapters = $('#list-chapters p').map((index, element) => {
+      const tempInfo = $(element).find('span.title > a');
+      const tempDate = String($(element).find('span.publishedDate').text()).split(' ');
+      const URLChapter = tempInfo.attr('href');
+      return {
+        name: tempInfo.text(),
+        link: checkProtocol({ URLWebManga: URLChapter }) ? URLChapter : completeDNS({ protocol: 'https', domain: 'blogtruyen', TLD: 'vn', urlPoint: URLChapter }),
+        create: {
+          date: tempDate[0],
+          hour: tempDate[1],
+        },
+      }
+    }).toArray().reverse();
+    console.log(dataChapters);
   }
 
 })()

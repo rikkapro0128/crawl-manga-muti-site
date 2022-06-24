@@ -1,0 +1,11 @@
+{
+  "name": "INFO-MUTI-SITE",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "cheerio": "^1.0.0-rc.11",
+    "htmlparser2": "^8.0.1"
+  }
+}

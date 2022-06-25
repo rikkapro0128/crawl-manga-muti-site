@@ -6,20 +6,20 @@ const contextWebManga = require('./util/index.js');
 const { analysisDNS } = require('./util/helper.js');
 const { websiteSupport } = require('./config/index.js');
 
-const linkManga = 'https://blogtruyen.vn/30507/the-bad-guys';
+const linkManga = 'http://www.nettruyenco.com/truyen-tranh/toi-da-bien-nguoi-ban-tho-au-thanh-con-gai-274070';
 
 (async () => {
   try {
     
     const { dns } = analysisDNS({ dns: linkManga }); // analysis url to dns information details
-    const webMatch = websiteSupport.find(value => value === dns.domainName); // check website list support to clone
+    const webMatch = websiteSupport.find(value => value.siteName === dns.domainName); // check website list support to clone
     if(webMatch) {
       const res = await axios.get(linkManga);
       if(res.status === 200) {
         const dom = htmlparser2.parseDocument(res.data);
         const $ = cheerio.load(dom);
         let general = new Object();
-        general = await contextWebManga[webMatch].getGeneral({ $ });
+        general = await contextWebManga[webMatch.siteName].getGeneral({ $ });
         console.log(general);
       }
     }else {

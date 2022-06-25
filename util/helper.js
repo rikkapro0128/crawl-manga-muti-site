@@ -12,17 +12,18 @@ function completeDNS({
   domain = "",
   TLD = "vn",
   urlPoint,
+  slug = true
 }) {
-  return `${protocol}://${
-    subdomain ? subdomain + "." : ""
-  }${domain}.${TLD}${urlPoint}`;
+  return `${protocol}:${slug ? '//' : ''}${
+    subdomain ? subdomain + '.' : ''
+  }${domain ? domain + '.' : ''}${domain ? TLD : ''}${urlPoint}`;
 }
 
-function formatDate(template = "") {
+function formatDate(template = "", reverse) {
   const tempDate = template.split(' ');
   return {
-    date: tempDate[0],
-    hour: tempDate[1],
+    date: reverse ? tempDate[1] : tempDate[0],
+    hour: reverse ? tempDate[0] : tempDate[1],
   };
 }
 

@@ -1,4 +1,4 @@
-const { formatDate, completeDNS, checkProtocol } = require("./helper.js");
+const { formatDate, completeDNS, checkProtocol, analysisDNS } = require("./helper.js");
 const axios = require("axios");
 const cheerio = require("cheerio");
 const htmlparser2 = require("htmlparser2");
@@ -22,9 +22,43 @@ class commonStatement {
     }
   }
 
+  // [get list images of every one chapter]
+  async getImagesChapter({ linkChapter, query, protocol = 'http' }) {
+    return new Promise(async (resovle, reject) => {
+      try {
+        const res = await axios.get(linkChapter);
+        if (res.status === 200) {
+          const dom = htmlparser2.parseDocument(res.data);
+          const $ = cheerio.load(dom);
+          resovle(
+            $(query)
+              .map((index, element) => {
+                const link = $(element).attr("src");
+                return checkProtocol({ URLWebManga: link }) ? link : `${protocol}:${link}`;
+              })
+              .toArray()
+          );
+        } else {
+          reject(
+            new Error(
+              "[Miru request] link chapter is error status code: " + res.status
+            )
+          );
+        }
+      } catch (error) {
+        reject(new Error("[Miru error] => " + error));
+      }
+    });
+  }
+
 }
 
-class blogtruyen {
+class blogtruyen extends commonStatement {
+
+  constructor() {
+    super();
+  }
+
   // [get information about manga, author, team-translate,...etc..]
   getInfo({ $ }) {
     const info = $(".main-content .description p")
@@ -128,36 +162,11 @@ class blogtruyen {
       .reverse();
   }
 
-  // [get list images of every one chapter]
-  async getImagesChapter({ linkChapter }) {
-    return new Promise(async (resovle, reject) => {
-      try {
-        const res = await axios.get(linkChapter);
-        if (res.status === 200) {
-          const dom = htmlparser2.parseDocument(res.data);
-          const $ = cheerio.load(dom);
-          resovle(
-            $("#content > img")
-              .map((index, element) => $(element).attr("src"))
-              .toArray()
-          );
-        } else {
-          reject(
-            new Error(
-              "Miru request link chapter is error status code: " + res.status
-            )
-          );
-        }
-      } catch (error) {
-        reject(new Error("Miru error => " + error));
-      }
-    });
-  }
-
   // [general of manga clone]
   async getGeneral({ $ }) {
     let general = new Object();
     let tempPromise = new Array();
+    general.type = 'blogtruyen';
     general.name = $(".main-content h1.entry-title").text().trim();
     general.thumbnail = $(".main-content .thumbnail > img").attr("src");
     general.info = this.getInfo({ $ });
@@ -171,7 +180,7 @@ class blogtruyen {
     tempPromise = general.chapters.map(async (element, index) => {
       return {
         ...element,
-        images: await this.getImagesChapter({ linkChapter: element.link }),
+        images: await this.getImagesChapter({ linkChapter: element.link, query: '#content > img', protocol: 'https' }),
       };
     });
     general.chapters = await Promise.all(tempPromise);
@@ -185,6 +194,19 @@ class nettruyenco extends commonStatement {
     super();
   }
 
+  getChapters({ $, query, cb = undefined }) {
+
+    return $(query).map((index, element) => {
+      const tempChapter = $(element).find('.chapter > a');
+      return {
+        name: tempChapter.text().trim(),
+        link: tempChapter.attr('href'),
+        updated_date: $(element).find('div.col-xs-4.text-center').text().trim(),
+      }
+    }).toArray().reverse();
+
+  }
+
   async getGeneral({ $ }) {
     let tempPromise = new Array();
     let general = new Object();
@@ -193,19 +215,28 @@ class nettruyenco extends commonStatement {
     let tempGenres = this.getText({ $, query: '#item-detail > .detail-info .col-info > .list-info > .kind > .col-xs-8', splitCharacter: '-', cb: (tempString) => tempString.map(value => value.trim()) });
     let tempStatus = this.getText({ $, query: '#item-detail > .detail-info .col-info > .list-info > .status > .col-xs-8' });
     let tempThumbnail = $("#item-detail > .detail-info .col-image > img").attr("src");
+    let tempChapters = this.getChapters({ $, query: '#nt_listchapter > nav > ul > li' });
+    general.type = 'nettruyenco';
     general.name = $("#item-detail > h1.title-detail").text().trim();
     general.desc = $("#item-detail > .detail-content p").text().trim();
-    general.updated_date = formatDate($("#item-detail > time.small").text().trim().slice(1, -1).split(/^[C|c]ập nhật lúc:/g)[1].trim(), true);
     if(!checkProtocol({ URLWebManga: tempThumbnail })) general.thumbnail = completeDNS({ protocol: 'http', urlPoint: tempThumbnail, slug: false });
     if(tempNameOther !== undefined) general.nameOther = tempNameOther;
     if(tempAuthor !== undefined) general.nameAuthor = tempAuthor;
     if(tempStatus !== undefined) general.status = tempStatus;
     if(tempGenres !== undefined) general.genres = tempGenres;
+    general.chapters = tempChapters.length ? tempChapters : [];
+    general.updated_date = formatDate($("#item-detail > time.small").text().trim().slice(1, -1).split(/^[C|c]ập nhật lúc:/g)[1].trim(), true);
 
+    tempPromise = general.chapters.map(async (element, index) => {
+      return {
+        ...element,
+        images: await this.getImagesChapter({ linkChapter: element.link, query: '#ctl00_divCenter .page-chapter > img' }),
+      };
+    });
+    general.chapters = await Promise.all(tempPromise);
     return general;
   }
 }
-
 
 module.exports = {
   blogtruyen: new blogtruyen(),

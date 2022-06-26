@@ -11,7 +11,7 @@ This is project crawl data from muti site, blogtruyen, nettruyenco,..etc..
 
 ## Model [Blogtruyen](https://blogtruyen.vn/) 💕
 
-```
+```js
 {
   type: 'blogtruyen',
   name: String,
@@ -41,7 +41,7 @@ This is project crawl data from muti site, blogtruyen, nettruyenco,..etc..
 ```
 ## Model [Nettruyen](http://www.nettruyenco.com/) 💕
 
-```
+```js
 {
   type: String,
   name: String,

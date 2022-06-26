@@ -5,7 +5,7 @@ const htmlparser2 = require("htmlparser2");
 
 class commonStatement {
 
-  getText({ $, query = '', splitCharacter = '', cb = undefined }) {
+  getContent({ $, query = '', splitCharacter = '', cb = undefined }) {
     const temp = $(query);
     if(temp.length) {
       let tempHandled = temp.text().trim();
@@ -72,11 +72,12 @@ class blogtruyen extends commonStatement {
               .filter((value) => value !== ""),
           };
         } else if (temp.includes("Tên khác:")) {
+          let tempNameOther = temp
+          .split(":")[1]
+          .split(/\s\s+/g)
+          .filter((value) => value !== "").map(val => val.includes(';') ? val.split(';').trim() : val.trim())
           return {
-            nameOther: temp
-              .split(":")[1]
-              .split(/\s\s+/g)
-              .filter((value) => value !== ""),
+            nameOther: tempNameOther.length > 0 ? tempNameOther : tempNameOther[0],
           };
         } else if (temp.includes("Nguồn:")) {
           return {
@@ -169,8 +170,8 @@ class blogtruyen extends commonStatement {
     general.type = 'blogtruyen';
     general.name = $(".main-content h1.entry-title").text().trim();
     general.thumbnail = $(".main-content .thumbnail > img").attr("src");
-    general.info = this.getInfo({ $ });
     general.desc = this.getDesc({ $ });
+    general = { ...general, ...this.getInfo({ $ }) };
     general.create_date = $(
       ".main-content .description .row > .col-sm-6 > span"
     )
@@ -189,11 +190,13 @@ class blogtruyen extends commonStatement {
 }
 
 class nettruyenco extends commonStatement {
+
   // [general of manga clone]
   constructor() {
     super();
   }
 
+  // [get list chapters of manga clone]
   getChapters({ $, query, cb = undefined }) {
 
     return $(query).map((index, element) => {
@@ -207,13 +210,14 @@ class nettruyenco extends commonStatement {
 
   }
 
+  // [general of manga clone]
   async getGeneral({ $ }) {
     let tempPromise = new Array();
     let general = new Object();
-    let tempNameOther = this.getText({ $, query: '#item-detail > .detail-info .col-info > .list-info > .othername > .col-xs-8', splitCharacter: ';', cb: (tempString) => tempString.map(value => value.trim()) });
-    let tempAuthor = this.getText({ $, query: '#item-detail > .detail-info .col-info > .list-info > .author > .col-xs-8', splitCharacter: '-', cb: (tempString) => tempString.map(value => value.trim()) });
-    let tempGenres = this.getText({ $, query: '#item-detail > .detail-info .col-info > .list-info > .kind > .col-xs-8', splitCharacter: '-', cb: (tempString) => tempString.map(value => value.trim()) });
-    let tempStatus = this.getText({ $, query: '#item-detail > .detail-info .col-info > .list-info > .status > .col-xs-8' });
+    let tempNameOther = this.getContent({ $, query: '#item-detail > .detail-info .col-info > .list-info > .othername > .col-xs-8', splitCharacter: ';', cb: (tempString) => tempString.map(value => value.trim()) });
+    let tempAuthor = this.getContent({ $, query: '#item-detail > .detail-info .col-info > .list-info > .author > .col-xs-8', splitCharacter: '-', cb: (tempString) => tempString.map(value => value.trim()) });
+    let tempGenres = this.getContent({ $, query: '#item-detail > .detail-info .col-info > .list-info > .kind > .col-xs-8', splitCharacter: '-', cb: (tempString) => tempString.map(value => value.trim()) });
+    let tempStatus = this.getContent({ $, query: '#item-detail > .detail-info .col-info > .list-info > .status > .col-xs-8' });
     let tempThumbnail = $("#item-detail > .detail-info .col-image > img").attr("src");
     let tempChapters = this.getChapters({ $, query: '#nt_listchapter > nav > ul > li' });
     general.type = 'nettruyenco';
@@ -221,7 +225,7 @@ class nettruyenco extends commonStatement {
     general.desc = $("#item-detail > .detail-content p").text().trim();
     if(!checkProtocol({ URLWebManga: tempThumbnail })) general.thumbnail = completeDNS({ protocol: 'http', urlPoint: tempThumbnail, slug: false });
     if(tempNameOther !== undefined) general.nameOther = tempNameOther;
-    if(tempAuthor !== undefined) general.nameAuthor = tempAuthor;
+    if(tempAuthor !== undefined) general.author = tempAuthor;
     if(tempStatus !== undefined) general.status = tempStatus;
     if(tempGenres !== undefined) general.genres = tempGenres;
     general.chapters = tempChapters.length ? tempChapters : [];
@@ -241,4 +245,5 @@ class nettruyenco extends commonStatement {
 module.exports = {
   blogtruyen: new blogtruyen(),
   nettruyenco: new nettruyenco(),
+  nhattruyenmoi: new nettruyenco(),
 };

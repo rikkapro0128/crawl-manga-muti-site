@@ -1,6 +1,10 @@
 module.exports = {
   websiteSupport: [
     {
+      siteName: 'nhattruyenmoi', // => http://nhattruyenmoi.com
+      referer:  'http://nhattruyenmoi.com/',
+    },
+    {
       siteName: 'blogtruyen', // => https://blogtruyen.vn
       referer:  'https://blogtruyen.vn/',
     },

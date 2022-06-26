@@ -1,4 +1,9 @@
-# Miru developer❤️
+# Miru developer (●'◡'●)
+
+<p align="center">
+   <img src="./assets/azure.gif" alt="[YOUR_ALT]"/>
+</p>
+
 #### Pagekage updating..
 
 This is project crawl data from muti site, blogtruyen, nettruyenco,..etc.. 
@@ -16,27 +21,25 @@ This is project crawl data from muti site, blogtruyen, nettruyenco,..etc..
   type: 'blogtruyen',
   name: String,
   thumbnail: String,
-  info: {
-    nameOther: [ String ],
-    author: [ String ],
-    source: [ String ],
-    teamTranslate: [ String ],
-    genres: [ String ],
-    origin: { postBy: String, status: String }
-  },
   desc: String,
+  nameOther: [ String ],
+  author: [ String ],
+  source: [ String ],
+  teamTranslate: [ String ],
+  genres: [ String ],
+  origin: { postBy: String, status: String },
   create_date: String,
   chapters: [
-        {
-          name: String,
-          link: String,
-          create: {
-              date: String,
-              hour: String,
-          },
-          images: [String]
-        },
-    ]
+    {
+      name: String,
+      link: String,
+      create: {
+          date: String,
+          hour: String,
+      },
+      images: [String]
+    },
+  ]
 }
 ```
 ## Model [Nettruyen](http://www.nettruyenco.com/) 💕
@@ -47,17 +50,17 @@ This is project crawl data from muti site, blogtruyen, nettruyenco,..etc..
   name: String,
   desc: String,
   thumbnail: String,
-  nameAuthor: [ String ],
+  author: [ String ],
   status: String,
   genres: [ String ],
   chapters: [
-        {
-          name: String,
-          link: String,
-          updated_date: String,
-          images: [String]
-        },
-    ]
+    {
+      name: String,
+      link: String,
+      updated_date: String,
+      images: [String]
+    },
+  ]
 }
 ```
 

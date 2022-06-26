@@ -6,7 +6,7 @@ const contextWebManga = require('./util/index.js');
 const { analysisDNS } = require('./util/helper.js');
 const { websiteSupport } = require('./config/index.js');
 
-const linkManga = 'http://www.nettruyenco.com/truyen-tranh/toi-viet-sach-de-thang-cap-354910';
+const linkManga = 'http://nhattruyenmoi.com/truyen-tranh/toi-co-dac-tinh-cua-cap-sss-nhung-thich-song-binh-thuong-61912';
 
 (async () => {
   try {
